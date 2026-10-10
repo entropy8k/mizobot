@@ -25,15 +25,9 @@ SECTIONS = [
         ("coinflip `<bet>` `[heads|tails]`", "Double or nothing"),
         ("slots `<bet>` / paytable", "Spin to win"),
     ]),
-    ("🎵 Last.fm", [
-        ("lastfm / setuser", "Now playing & link your account"),
-        ("topalbums / topbands / topgenres", "Your stats"),
-        ("leaderboard / albumleaderboard", "Server rankings for an artist or album"),
-        ("artistgenres / albumrecs", "Discovery"),
-    ]),
     ("🎶 Music", [("join / leave / play / queue / skip / stop", "Voice channel player")]),
     ("🎉 Fun", [
-        ("8ball / roll / say / ifunny", "Classic fun"),
+        ("8ball / roll / say", "Classic fun"),
         ("soyimg / swaimg / nuttyimg / img", "Image commands"),
     ]),
 ]
