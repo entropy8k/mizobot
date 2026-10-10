@@ -156,17 +156,6 @@ class Economy(commands.Cog):
             reels = spin_reels()
             mult = slot_multiplier(reels)
 
-            def board(r, status):
-                return f"## ┃ {r[0]} ┃ {r[1]} ┃ {r[2]} ┃\n{status}"
-
-            msg = await ctx.send(embed=embed("🎰 Slots", board(["❓"] * 3, "*spinning…*"), C.INFO))
-            shown = ["❓"] * 3
-            for i in range(3):
-                await asyncio.sleep(0.8)
-                shown[i] = reels[i]
-                rest = ["🎲"] * (2 - i)
-                await msg.edit(embed=embed("🎰 Slots", board(shown[: i + 1] + rest, "*spinning…*"), C.INFO))
-
             payout = int(bet * mult)
             if payout:
                 self.db.add(ctx.author.id, payout)
@@ -174,6 +163,13 @@ class Economy(commands.Cog):
             if net != 0:
                 self.db.record_result(ctx.author.id, net)
             self.db.add_transaction(getattr(ctx.guild, "id", None), ctx.author.id, "slots", net)
+
+        def board(r, status):
+            return f"## ┃ {r[0]} ┃ {r[1]} ┃ {r[2]} ┃\n{status}"
+
+        # one quick "spin" frame, then the result (money is already settled above)
+        msg = await ctx.send(embed=embed("🎰 Slots", board(["🎲"] * 3, "*spinning…*"), C.INFO))
+        await asyncio.sleep(0.6)
 
         if mult >= 25:
             status, color = f"💎 **JACKPOT!** ×{mult:g} — you won {money(payout)}", C.GOLD
