@@ -16,7 +16,6 @@ SECTIONS = [
         ("prefix", "Show or change the prefix"),
         ("setlogchannel / setmodlog", "Where event logs and mod cases go"),
         ("settings / auditlog", "View config and the logged-event database"),
-        ("setstarboard / setrapedboard / setrapedemoji", "Board channels"),
     ]),
     ("💰 M$", [
         ("balance / baltop", "Start with M$10,000, earn M$1 per message"),
@@ -25,10 +24,8 @@ SECTIONS = [
         ("coinflip `<bet>` `[heads|tails]`", "Double or nothing"),
         ("slots `<bet>` / paytable", "Spin to win"),
     ]),
-    ("🎶 Music", [("join / leave / play / queue / skip / stop", "Voice channel player")]),
     ("🎉 Fun", [
         ("8ball / roll / say", "Classic fun"),
-        ("img", "Image search"),
     ]),
 ]
 
