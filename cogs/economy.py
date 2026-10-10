@@ -1,4 +1,4 @@
-"""MizoDollars (M$) — a currency with no purpose other than fun. Everyone starts with M$10,000."""
+"""M$ (M$) — a currency with no purpose other than fun. Everyone starts with M$10,000."""
 import asyncio
 import random
 
@@ -33,7 +33,7 @@ def slot_multiplier(reels):
 
 
 class Economy(commands.Cog):
-    """Mizodollars: balance, give, baltop, coinflip, slots, plus M$1 for every message you send."""
+    """M$: balance, give, baltop, coinflip, slots, plus M$1 for every message you send."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -70,13 +70,13 @@ class Economy(commands.Cog):
             await ctx.send(embed=embed("Invalid bet", "Use a number like `500`, `2k`, `half` or `all`.", C.BAD), ephemeral=True)
             return None
         if bet > self.db.balance(ctx.author.id):
-            await ctx.send(embed=embed("Not enough mizodollars",
+            await ctx.send(embed=embed("Not enough M$",
                                        f"You have {money(self.db.balance(ctx.author.id))}.", C.BAD), ephemeral=True)
             return None
         return bet
 
     # ------------------------------------------------------------ balance
-    @commands.hybrid_command(name="balance", aliases=["bal", "wallet"], description="Check your (or someone's) mizodollars.")
+    @commands.hybrid_command(name="balance", aliases=["bal", "wallet"], description="Check your (or someone's) M$.")
     async def balance(self, ctx, user: discord.User = None):
         user = user or ctx.author
         u = self.db.get_user(user.id)
@@ -95,7 +95,7 @@ class Economy(commands.Cog):
         self.db.add(message.author.id, MESSAGE_REWARD)
 
     # --------------------------------------------------------------- give
-    @commands.hybrid_command(name="give", aliases=["pay"], description="Give mizodollars to another user.")
+    @commands.hybrid_command(name="give", aliases=["pay"], description="Give M$ to another user.")
     async def give(self, ctx, user: discord.User, amount: str):
         if user.bot or user.id == ctx.author.id:
             return await ctx.send(embed=embed("Nope", "Pick someone else (and not a bot).", C.BAD), ephemeral=True)
@@ -110,14 +110,14 @@ class Economy(commands.Cog):
         e.add_field(name="Your balance", value=money(self.db.balance(ctx.author.id)))
         await ctx.send(embed=e)
 
-    @commands.hybrid_command(name="baltop", aliases=["rich", "moneyboard"], description="Richest users in mizodollars.")
+    @commands.hybrid_command(name="baltop", aliases=["rich", "moneyboard"], description="Richest users in M$.")
     async def baltop(self, ctx):
         medals = ["🥇", "🥈", "🥉"]
         lines = []
         for i, r in enumerate(self.db.richest(10)):
             u = self.bot.get_user(r["user_id"])
             lines.append(f"{medals[i] if i < 3 else f'`{i + 1}.`'} **{u.display_name if u else r['user_id']}** — {CURRENCY}{r['balance']:,}")
-        await ctx.send(embed=embed("🏆 Richest in mizoland", "\n".join(lines) or "Nobody yet.", C.GOLD))
+        await ctx.send(embed=embed("🏆 Richest in Mizocord", "\n".join(lines) or "Nobody yet.", C.GOLD))
 
     # ----------------------------------------------------------- coinflip
     @commands.hybrid_command(name="coinflip", aliases=["cf", "flip"], description="Flip a coin. Add a bet and a side to gamble (2x payout).")
@@ -147,7 +147,7 @@ class Economy(commands.Cog):
         await ctx.send(embed=e)
 
     # -------------------------------------------------------------- slots
-    @commands.hybrid_command(name="slots", description="Spin the slot machine with mizodollars.")
+    @commands.hybrid_command(name="slots", description="Spin the slot machine with M$.")
     async def slots(self, ctx, amount: str):
         async with self._lock(ctx.author.id):
             bet = await self._validate_bet(ctx, amount)
