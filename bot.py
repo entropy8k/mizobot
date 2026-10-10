@@ -17,9 +17,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(na
 log = logging.getLogger("mizobot")
 
 COGS = [
-    "cogs.settings", "cogs.errors", "cogs.logs", "cogs.mod", "cogs.economy", "cogs.profile", "cogs.help",
-    "cogs.fun", "cogs.link_moderator", "cogs.starboard",
-    "cogs.rapedboard", "cogs.img",
+    "cogs.settings", "cogs.errors", "cogs.logs", "cogs.mod", "cogs.economy",
+    "cogs.profile", "cogs.help", "cogs.fun",
 ]
 
 
