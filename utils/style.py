@@ -44,3 +44,20 @@ def fmt_duration(seconds: int) -> str:
             out.append(f"{seconds // size}{name}")
             seconds %= size
     return " ".join(out) or "0s"
+
+
+_NAMED = {"red": 0xED4245, "orange": 0xE67E22, "yellow": 0xFEE75C, "green": 0x57F287, "blue": 0x5865F2,
+          "purple": 0x9B7BFF, "pink": 0xFF69B4, "white": 0xFFFFFF, "black": 0x010101, "gold": 0xF1C40F, "cyan": 0x1ABC9C}
+
+def parse_color(text):
+    """'#ff00aa', 'f0a', or a name like 'red' -> int. Empty -> None meaning 'use default'. Invalid -> False."""
+    t = (text or "").strip().lower().lstrip("#")
+    if not t:
+        return None
+    if t in _NAMED:
+        return _NAMED[t]
+    if re.fullmatch(r"[0-9a-f]{3}", t):
+        t = "".join(c * 2 for c in t)
+    if re.fullmatch(r"[0-9a-f]{6}", t):
+        return int(t, 16)
+    return False

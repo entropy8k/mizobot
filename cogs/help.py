@@ -23,6 +23,10 @@ SECTIONS = [
         ("give", "Send M$ to a user"),
         ("coinflip `<bet>` `[heads|tails]`", "Double or nothing"),
         ("slots `<bet>` / paytable", "Spin to win"),
+        ("work", "Pick a job for safe pay"),
+        ("crime", "Risky: big payouts, lose part of your M$ if caught"),
+        ("steal `@user`", "Rob a player — fail and they take yours"),
+        ("store", "Custom roles, nicknames and the mod role"),
     ]),
     ("🎉 Fun", [
         ("8ball / roll / say", "Classic fun"),

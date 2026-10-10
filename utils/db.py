@@ -68,6 +68,13 @@ CREATE TABLE IF NOT EXISTS activity (
     PRIMARY KEY (guild_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS custom_roles (
+    guild_id    INTEGER NOT NULL,
+    user_id     INTEGER NOT NULL,
+    role_id     INTEGER NOT NULL,
+    PRIMARY KEY (guild_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     guild_id    INTEGER,
@@ -274,3 +281,12 @@ class Database:
             "FROM transactions WHERE user_id=? AND kind='give'", (user_id,)
         ).fetchone()
         return r["sent"], r["received"]
+
+    # ------------------------------------------------------------- store
+    def get_custom_role(self, guild_id, user_id):
+        r = self.conn.execute("SELECT role_id FROM custom_roles WHERE guild_id=? AND user_id=?", (guild_id, user_id)).fetchone()
+        return r["role_id"] if r else None
+
+    def set_custom_role(self, guild_id, user_id, role_id):
+        self.conn.execute("INSERT OR REPLACE INTO custom_roles (guild_id, user_id, role_id) VALUES (?, ?, ?)", (guild_id, user_id, role_id))
+        self.conn.commit()
