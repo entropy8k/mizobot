@@ -28,7 +28,7 @@ SECTIONS = [
     ("🎶 Music", [("join / leave / play / queue / skip / stop", "Voice channel player")]),
     ("🎉 Fun", [
         ("8ball / roll / say", "Classic fun"),
-        ("soyimg / swaimg / nuttyimg / img", "Image commands"),
+        ("img", "Image search"),
     ]),
 ]
 

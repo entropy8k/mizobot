@@ -19,8 +19,7 @@ log = logging.getLogger("mizobot")
 COGS = [
     "cogs.settings", "cogs.errors", "cogs.logs", "cogs.mod", "cogs.economy", "cogs.profile", "cogs.help",
     "cogs.fun", "cogs.music", "cogs.link_moderator", "cogs.starboard",
-    "cogs.rapedboard", "cogs.soybooru", "cogs.swabooru",
-    "cogs.nuttybooru", "cogs.img",
+    "cogs.rapedboard", "cogs.swabooru","cogs.img",
 ]
 
 
