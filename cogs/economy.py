@@ -8,6 +8,7 @@ from discord.ext import commands
 from utils.db import STARTING_BALANCE
 from utils.style import C, CURRENCY, embed, money
 
+SPIN_DELAY = 0.5     # seconds between reel frames (Discord allows ~5 edits / 5s)
 MESSAGE_REWARD = 1   # M$ earned per message sent
 
 # symbol: (weight, payout multiplier for 3-of-a-kind)
@@ -164,12 +165,29 @@ class Economy(commands.Cog):
                 self.db.record_result(ctx.author.id, net)
             self.db.add_transaction(getattr(ctx.guild, "id", None), ctx.author.id, "slots", net)
 
-        def board(r, status):
-            return f"## ┃ {r[0]} ┃ {r[1]} ┃ {r[2]} ┃\n{status}"
+        def rand_sym():
+            return random.choices(SLOT_NAMES, weights=SLOT_WEIGHTS)[0]
 
-        # one quick "spin" frame, then the result (money is already settled above)
-        msg = await ctx.send(embed=embed("🎰 Slots", board(["🎲"] * 3, "*spinning…*"), C.INFO))
-        await asyncio.sleep(0.6)
+        # symbols that sit above/below the payline once each reel stops
+        fillers = [(rand_sym(), rand_sym()) for _ in range(3)]
+
+        def board(locked, status):
+            """3 rows x 3 reels; the middle row is the payline. Unlocked reels show random symbols."""
+            cols = []
+            for i in range(3):
+                if i < locked:
+                    cols.append((fillers[i][0], reels[i], fillers[i][1]))
+                else:
+                    cols.append((rand_sym(), rand_sym(), rand_sym()))
+            row = lambda k: " ┃ ".join(c[k] for c in cols)
+            return f"## ⠀ {row(0)}\n## ▶ {row(1)} ◀\n## ⠀ {row(2)}\n{status}"
+
+        # reels spin, then stop left -> right, like a real machine
+        msg = await ctx.send(embed=embed("🎰 Slots", board(0, "*spinning…*"), C.INFO))
+        for locked in (0, 1, 2):
+            await asyncio.sleep(SPIN_DELAY)
+            await msg.edit(embed=embed("🎰 Slots", board(locked, "*spinning…*"), C.INFO))
+        await asyncio.sleep(SPIN_DELAY)
 
         if mult >= 25:
             status, color = f"💎 **JACKPOT!** ×{mult:g} — you won {money(payout)}", C.GOLD
@@ -181,7 +199,7 @@ class Economy(commands.Cog):
             status, color = f"😬 Lone cherry — you got {money(payout)} back (lost {money(-net)}).", C.WARN
         else:
             status, color = f"💀 No luck — lost {money(bet)}.", C.BAD
-        e = embed("🎰 Slots", board(reels, status), color)
+        e = embed("🎰 Slots", board(3, status), color)
         e.add_field(name="Balance", value=money(self.db.balance(ctx.author.id)))
         await msg.edit(embed=e)
 
