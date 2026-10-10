@@ -75,6 +75,13 @@ CREATE TABLE IF NOT EXISTS custom_roles (
     PRIMARY KEY (guild_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS claims (             -- daily / weekly rewards
+    user_id     INTEGER NOT NULL,
+    kind        TEXT NOT NULL,
+    last_at     INTEGER NOT NULL,
+    PRIMARY KEY (user_id, kind)
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     guild_id    INTEGER,
@@ -290,3 +297,17 @@ class Database:
     def set_custom_role(self, guild_id, user_id, role_id):
         self.conn.execute("INSERT OR REPLACE INTO custom_roles (guild_id, user_id, role_id) VALUES (?, ?, ?)", (guild_id, user_id, role_id))
         self.conn.commit()
+
+    # ----------------------------------------------------------- rewards
+    def claim(self, user_id, kind, amount, cooldown):
+        """Atomically claim a periodic reward. Returns (claimed, seconds_remaining)."""
+        self.get_user(user_id)
+        now = int(time.time())
+        row = self.conn.execute("SELECT last_at FROM claims WHERE user_id=? AND kind=?", (user_id, kind)).fetchone()
+        remaining = row["last_at"] + cooldown - now if row else 0
+        if remaining > 0:
+            return False, remaining
+        self.conn.execute("INSERT OR REPLACE INTO claims (user_id, kind, last_at) VALUES (?, ?, ?)", (user_id, kind, now))
+        self.conn.execute("UPDATE users SET balance = balance + ? WHERE user_id=?", (amount, user_id))
+        self.conn.commit()
+        return True, 0

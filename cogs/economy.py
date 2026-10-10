@@ -1,18 +1,20 @@
 """M$ — a currency with no purpose other than fun. Everyone starts with M$10,000."""
 import asyncio
 import random
+import time
 
 import discord
 from discord.ext import commands
 
 from utils.db import STARTING_BALANCE
-from utils.style import C, CURRENCY, embed, money
+from utils.style import C, CURRENCY, embed, money, ts
 
 # OS-level entropy (/dev/urandom, CryptGenRandom on Windows) instead of the default pseudo-random generator
 rng = random.SystemRandom()
 
 SPIN_DELAY = 0.5     # seconds between reel frames (Discord allows ~5 edits / 5s)
 MESSAGE_REWARD = 1   # M$ earned per message sent
+REWARDS = {"daily": (1_500, 24 * 3600), "weekly": (5_000, 7 * 24 * 3600)}   # kind: (amount, cooldown seconds)
 
 # symbol: (weight, payout multiplier for 3-of-a-kind)
 SLOT_SYMBOLS = {"🍒": (30, 4), "🍋": (26, 5), "🍇": (20, 8), "🔔": (12, 12), "⭐": (7, 25), "💎": (4, 60), "7️⃣": (1, 200)}
@@ -96,6 +98,26 @@ class Economy(commands.Cog):
         if message.author.bot or message.guild is None:
             return
         self.db.add(message.author.id, MESSAGE_REWARD)
+
+    # ------------------------------------------------- daily / weekly
+    async def _claim(self, ctx, kind):
+        amount, cooldown = REWARDS[kind]
+        ok, remaining = self.db.claim(ctx.author.id, kind, amount, cooldown)
+        if not ok:
+            return await ctx.send(embed=embed("⏳ Already claimed", f"Your next {kind} is ready {ts(int(time.time()) + remaining)}.", C.WARN), ephemeral=True)
+        self.db.add_transaction(getattr(ctx.guild, "id", None), ctx.author.id, kind, amount)
+        e = embed(f"🎁 {kind.title()} reward", f"+{money(amount)}", C.OK)
+        e.add_field(name="Balance", value=money(self.db.balance(ctx.author.id)))
+        e.add_field(name="Next", value=ts(int(time.time()) + cooldown))
+        await ctx.send(embed=e)
+
+    @commands.hybrid_command(name="daily", description=f"Claim your daily {CURRENCY}{REWARDS['daily'][0]:,}.")
+    async def daily(self, ctx):
+        await self._claim(ctx, "daily")
+
+    @commands.hybrid_command(name="weekly", description=f"Claim your weekly {CURRENCY}{REWARDS['weekly'][0]:,}.")
+    async def weekly(self, ctx):
+        await self._claim(ctx, "weekly")
 
     # --------------------------------------------------------------- give
     @commands.hybrid_command(name="give", aliases=["pay"], description="Give M$ to another user.")
