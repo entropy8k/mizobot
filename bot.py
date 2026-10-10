@@ -47,7 +47,7 @@ class MizoBot(commands.Bot):
         for guild in self.guilds:
             self.db.ensure_guild(guild)
             self.prefixes.setdefault(guild.id, self.db.get_guild(guild.id)["prefix"])
-        await self.change_presence(activity=discord.Game(name="mizodollars | !help"))
+        await self.change_presence(activity=discord.Game(name="M$ | !help"))
         log.info("logged in as %s in %d guilds", self.user, len(self.guilds))
 
     async def on_guild_join(self, guild):
