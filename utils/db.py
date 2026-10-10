@@ -59,6 +59,15 @@ CREATE TABLE IF NOT EXISTS users (
     created_at  INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS activity (
+    guild_id        INTEGER NOT NULL,
+    user_id         INTEGER NOT NULL,
+    messages        INTEGER NOT NULL DEFAULT 0,
+    first_seen      INTEGER NOT NULL,
+    last_message_at INTEGER NOT NULL,
+    PRIMARY KEY (guild_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     guild_id    INTEGER,
@@ -228,3 +237,40 @@ class Database:
 
     def richest(self, limit=10):
         return self.conn.execute("SELECT user_id, balance FROM users ORDER BY balance DESC LIMIT ?", (limit,)).fetchall()
+
+    # ----------------------------------------------------------- profile
+    def bump_activity(self, guild_id, user_id):
+        now = int(time.time())
+        self.conn.execute(
+            "INSERT INTO activity (guild_id, user_id, messages, first_seen, last_message_at) VALUES (?, ?, 1, ?, ?) "
+            "ON CONFLICT(guild_id, user_id) DO UPDATE SET messages = messages + 1, last_message_at = excluded.last_message_at",
+            (guild_id, user_id, now, now),
+        )
+        self.conn.commit()
+
+    def get_activity(self, guild_id, user_id):
+        return self.conn.execute("SELECT * FROM activity WHERE guild_id=? AND user_id=?", (guild_id, user_id)).fetchone()
+
+    def total_messages(self, user_id):
+        return self.conn.execute("SELECT COALESCE(SUM(messages), 0) FROM activity WHERE user_id=?", (user_id,)).fetchone()[0]
+
+    def wealth_rank(self, user_id):
+        bal = self.balance(user_id)
+        return self.conn.execute("SELECT COUNT(*) + 1 FROM users WHERE balance > ?", (bal,)).fetchone()[0]
+
+    def bet_stats(self, user_id):
+        """Per-game stats: {kind: {bets, wins, losses, ties, net, best}} for coinflip & slots."""
+        rows = self.conn.execute(
+            "SELECT kind, COUNT(*) bets, SUM(amount > 0) wins, SUM(amount < 0) losses, SUM(amount = 0) ties, "
+            "SUM(amount) net, MAX(amount) best FROM transactions "
+            "WHERE user_id=? AND kind IN ('coinflip', 'slots') GROUP BY kind", (user_id,)
+        ).fetchall()
+        return {r["kind"]: dict(r) for r in rows}
+
+    def give_stats(self, user_id):
+        r = self.conn.execute(
+            "SELECT COALESCE(SUM(CASE WHEN amount < 0 THEN -amount END), 0) sent, "
+            "COALESCE(SUM(CASE WHEN amount > 0 THEN amount END), 0) received "
+            "FROM transactions WHERE user_id=? AND kind='give'", (user_id,)
+        ).fetchone()
+        return r["sent"], r["received"]

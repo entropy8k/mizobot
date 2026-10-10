@@ -20,6 +20,7 @@ SECTIONS = [
     ]),
     ("💰 Mizodollars (M$)", [
         ("balance / baltop", "Start with M$10,000, earn M$1 per message"),
+        ("profile", "Your stats: wallet, activity and betting record"),
         ("give", "Send M$ to a user"),
         ("coinflip `<bet>` `[heads|tails]`", "Double or nothing"),
         ("slots `<bet>` / paytable", "Spin to win"),
