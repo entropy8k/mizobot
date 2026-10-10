@@ -219,19 +219,6 @@ class Database:
         self.add(to_id, amount)
         return True
 
-    def claim_daily(self, user_id, amount, cooldown):
-        """Returns (claimed, seconds_remaining)."""
-        user = self.get_user(user_id)
-        now = int(time.time())
-        remaining = user["last_daily"] + cooldown - now
-        if remaining > 0:
-            return False, remaining
-        self.conn.execute(
-            "UPDATE users SET balance = balance + ?, last_daily=? WHERE user_id=?", (amount, now, user_id)
-        )
-        self.conn.commit()
-        return True, 0
-
     def add_transaction(self, guild_id, user_id, kind, amount, other_id=None):
         self.conn.execute(
             "INSERT INTO transactions (guild_id, user_id, other_id, kind, amount, created_at) VALUES (?, ?, ?, ?, ?, ?)",
