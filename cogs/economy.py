@@ -8,6 +8,9 @@ from discord.ext import commands
 from utils.db import STARTING_BALANCE
 from utils.style import C, CURRENCY, embed, money
 
+# OS-level entropy (/dev/urandom, CryptGenRandom on Windows) instead of the default pseudo-random generator
+rng = random.SystemRandom()
+
 SPIN_DELAY = 0.5     # seconds between reel frames (Discord allows ~5 edits / 5s)
 MESSAGE_REWARD = 1   # M$ earned per message sent
 
@@ -18,7 +21,7 @@ SLOT_WEIGHTS = [v[0] for v in SLOT_SYMBOLS.values()]
 
 
 def spin_reels():
-    return random.choices(SLOT_NAMES, weights=SLOT_WEIGHTS, k=3)
+    return rng.choices(SLOT_NAMES, weights=SLOT_WEIGHTS, k=3)
 
 
 def slot_multiplier(reels):
@@ -122,7 +125,7 @@ class Economy(commands.Cog):
     # ----------------------------------------------------------- coinflip
     @commands.hybrid_command(name="coinflip", aliases=["cf", "flip"], description="Flip a coin. Add a bet and a side to gamble (2x payout).")
     async def coinflip(self, ctx, amount: str = None, side: str = "heads"):
-        result = random.choice(["heads", "tails"])
+        result = rng.choice(["heads", "tails"])
         if amount is None:  # free flip, like the old command
             return await ctx.send(embed=embed("🪙 Coin flip", f"It landed on **{result}**!"))
         side = side.lower()
@@ -166,7 +169,7 @@ class Economy(commands.Cog):
             self.db.add_transaction(getattr(ctx.guild, "id", None), ctx.author.id, "slots", net)
 
         def rand_sym():
-            return random.choices(SLOT_NAMES, weights=SLOT_WEIGHTS)[0]
+            return rng.choices(SLOT_NAMES, weights=SLOT_WEIGHTS)[0]
 
         # symbols that sit above/below the payline once each reel stops
         fillers = [(rand_sym(), rand_sym()) for _ in range(3)]
