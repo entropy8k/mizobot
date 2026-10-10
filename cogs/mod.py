@@ -299,20 +299,6 @@ class Moderation(commands.Cog):
         self.db.log_event(ctx.guild.id, "mod_purge", ctx.author.id, ctx.channel.id, f"{len(deleted)} messages")
         await ctx.send(embed=embed("Purged", f"Deleted **{len(deleted)}** messages.", C.OK), delete_after=5)
 
-    @commands.hybrid_command(name="nuke", description="Delete every message in this channel. Use with caution.")
-    @commands.has_permissions(manage_messages=True)
-    @commands.bot_has_permissions(manage_messages=True)
-    @commands.guild_only()
-    async def nuke(self, ctx):
-        if not isinstance(ctx.channel, discord.TextChannel):
-            return await self._deny(ctx, "Text channels only.")
-        await ctx.send(embed=embed("💥 Nuking…", "This may take a while.", C.MOD))
-        total = 0
-        while deleted := await ctx.channel.purge(limit=100):
-            total += len(deleted)
-        self.db.log_event(ctx.guild.id, "mod_nuke", ctx.author.id, ctx.channel.id, f"{total} messages")
-        await ctx.send(embed=embed("💥 Nuked", f"Deleted **{total}** messages.", C.OK))
-
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))

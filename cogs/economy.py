@@ -1,4 +1,4 @@
-"""M$ (M$) — a currency with no purpose other than fun. Everyone starts with M$10,000."""
+"""M$ — a currency with no purpose other than fun. Everyone starts with M$10,000."""
 import asyncio
 import random
 
@@ -180,7 +180,8 @@ class Economy(commands.Cog):
                 else:
                     cols.append((rand_sym(), rand_sym(), rand_sym()))
             row = lambda k: " ┃ ".join(c[k] for c in cols)
-            return f"## ⠀ {row(0)}\n## ▶ {row(1)} ◀\n## ⠀ {row(2)}\n{status}"
+            # identical-width emoji on every row so the columns line up
+            return f"## ⬛ {row(0)} ⬛\n## ▶️ {row(1)} ◀️\n## ⬛ {row(2)} ⬛\n{status}"
 
         # reels spin, then stop left -> right, like a real machine
         msg = await ctx.send(embed=embed("🎰 Slots", board(0, "*spinning…*"), C.INFO))

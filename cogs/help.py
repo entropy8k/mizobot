@@ -10,7 +10,7 @@ SECTIONS = [
         ("warn / warnings / delwarn / clearwarnings", "Warnings (3 = kick, 5 = ban)"),
         ("quarantine / unquarantine", "Strip roles & lock out; restored on release"),
         ("case / history", "Look up cases and a user's record"),
-        ("purge / nuke", "Bulk delete messages"),
+        ("purge", "Bulk delete messages"),
     ]),
     ("⚙️ Server setup", [
         ("prefix", "Show or change the prefix"),
@@ -18,7 +18,7 @@ SECTIONS = [
         ("settings / auditlog", "View config and the logged-event database"),
         ("setstarboard / setrapedboard / setrapedemoji", "Board channels"),
     ]),
-    ("💰 Mizodollars (M$)", [
+    ("💰 M$", [
         ("balance / baltop", "Start with M$10,000, earn M$1 per message"),
         ("profile", "Your stats: wallet, activity and betting record"),
         ("give", "Send M$ to a user"),
