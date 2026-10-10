@@ -6,10 +6,9 @@ import discord
 from discord.ext import commands
 
 from utils.db import STARTING_BALANCE
-from utils.style import C, CURRENCY, embed, fmt_duration, money
+from utils.style import C, CURRENCY, embed, money
 
-DAILY_AMOUNT = 1_000
-DAILY_COOLDOWN = 24 * 3600
+MESSAGE_REWARD = 1   # M$ earned per message sent
 
 # symbol: (weight, payout multiplier for 3-of-a-kind)
 SLOT_SYMBOLS = {"🍒": (30, 4), "🍋": (26, 5), "🍇": (20, 8), "🔔": (12, 12), "⭐": (7, 25), "💎": (4, 60), "7️⃣": (1, 200)}
@@ -33,7 +32,7 @@ def slot_multiplier(reels):
 
 
 class Economy(commands.Cog):
-    """Mizodollars: balance, daily, give, baltop, coinflip, slots."""
+    """Mizodollars: balance, give, baltop, coinflip, slots, plus M$1 for every message you send."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -87,13 +86,12 @@ class Economy(commands.Cog):
         e.add_field(name="Total lost", value=f"{CURRENCY}{u['lost']:,}")
         await ctx.send(embed=e)
 
-    @commands.hybrid_command(name="daily", description=f"Claim {CURRENCY}{DAILY_AMOUNT:,} every 24 hours.")
-    async def daily(self, ctx):
-        ok, remaining = self.db.claim_daily(ctx.author.id, DAILY_AMOUNT, DAILY_COOLDOWN)
-        if not ok:
-            return await ctx.send(embed=embed("Already claimed", f"Come back in **{fmt_duration(remaining)}**.", C.WARN))
-        self.db.add_transaction(getattr(ctx.guild, "id", None), ctx.author.id, "daily", DAILY_AMOUNT)
-        await ctx.send(embed=embed("🎁 Daily claimed", f"+{money(DAILY_AMOUNT)}\nBalance: {money(self.db.balance(ctx.author.id))}", C.OK))
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        """Every message sent in a server earns M$1."""
+        if message.author.bot or message.guild is None:
+            return
+        self.db.add(message.author.id, MESSAGE_REWARD)
 
     # --------------------------------------------------------------- give
     @commands.hybrid_command(name="give", aliases=["pay"], description="Give mizodollars to another user.")

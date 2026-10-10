@@ -19,7 +19,7 @@ SECTIONS = [
         ("setstarboard / setrapedboard / setrapedemoji", "Board channels"),
     ]),
     ("💰 Mizodollars (M$)", [
-        ("balance / daily / baltop", "Everyone starts with M$10,000"),
+        ("balance / baltop", "Start with M$10,000, earn M$1 per message"),
         ("give", "Send M$ to a user"),
         ("coinflip `<bet>` `[heads|tails]`", "Double or nothing"),
         ("slots `<bet>` / paytable", "Spin to win"),
@@ -45,7 +45,7 @@ class HelpCog(commands.Cog):
     @commands.hybrid_command(name="help", description="Show everything I can do.")
     async def help_command(self, ctx):
         p = ctx.clean_prefix
-        e = embed("✦ mizobot", f"Prefix: `{p}` · also works as slash commands.\nTry `{p}daily` to grab some **M$**.", C.BRAND)
+        e = embed("✦ mizobot", f"Prefix: `{p}` · also works as slash commands.\nEvery message you send earns **M$1**.", C.BRAND)
         if self.bot.user.display_avatar:
             e.set_thumbnail(url=self.bot.user.display_avatar.url)
         for title, items in SECTIONS:
