@@ -1,39 +1,68 @@
-import discord
-from discord.ext import commands
+import asyncio
+import logging
 import os
 
-intents = discord.Intents.all()
-intents.message_content = True
-intents.members = True
-intents.guilds = True
-intents.messages = True
-intents.reactions = True
-bot = commands.Bot(command_prefix='!', intents=intents)
+import discord
+from discord.ext import commands
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
-    await bot.tree.sync()  # sync slash commands
-# Load cogs
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+from utils.db import Database, DEFAULT_PREFIX
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
+log = logging.getLogger("mizobot")
+
+COGS = [
+    "cogs.settings", "cogs.errors", "cogs.logs", "cogs.mod", "cogs.economy", "cogs.help",
+    "cogs.fun", "cogs.music", "cogs.link_moderator", "cogs.meme", "cogs.starboard",
+    "cogs.rapedboard", "cogs.ifunny_cog", "cogs.soybooru", "cogs.swabooru",
+    "cogs.nuttybooru", "cogs.lastfm", "cogs.img",
+]
+
+
+class MizoBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.all()
+        super().__init__(command_prefix=self.get_prefix_for, intents=intents, help_command=None)
+        self.db = Database(os.getenv("MIZOBOT_DB", "mizobot.db"))
+        self.prefixes = self.db.all_prefixes()
+
+    async def get_prefix_for(self, bot, message):
+        prefix = self.prefixes.get(message.guild.id, DEFAULT_PREFIX) if message.guild else DEFAULT_PREFIX
+        return commands.when_mentioned_or(prefix)(bot, message)
+
+    async def setup_hook(self):
+        for ext in COGS:
+            try:
+                await self.load_extension(ext)
+                log.info("loaded %s", ext)
+            except Exception:
+                log.exception("failed to load %s", ext)
+        await self.tree.sync()
+
+    async def on_ready(self):
+        for guild in self.guilds:
+            self.db.ensure_guild(guild)
+            self.prefixes.setdefault(guild.id, self.db.get_guild(guild.id)["prefix"])
+        await self.change_presence(activity=discord.Game(name="mizodollars | !help"))
+        log.info("logged in as %s in %d guilds", self.user, len(self.guilds))
+
+    async def on_guild_join(self, guild):
+        self.db.ensure_guild(guild)
+        self.prefixes[guild.id] = self.db.get_guild(guild.id)["prefix"]
+
+
 async def main():
-    async with bot:
-        await bot.load_extension('cogs.music')
-        await bot.load_extension('cogs.mod')
-        await bot.load_extension('cogs.warn')
-        await bot.load_extension('cogs.help')
-        await bot.load_extension('cogs.fun')
-        await bot.load_extension('cogs.link_moderator')
-        await bot.load_extension('cogs.logs')
-        await bot.load_extension('cogs.meme')
-        await bot.load_extension('cogs.starboard')
-        await bot.load_extension('cogs.rapedboard')
-        await bot.load_extension("cogs.ifunny_cog")
-        await bot.load_extension('cogs.soybooru')
-        await bot.load_extension('cogs.swabooru')
-        await bot.load_extension('cogs.nuttybooru')
-        await bot.load_extension('cogs.lastfm')
-        await bot.load_extension('cogs.img')
-        await bot.start("MTQzMjM4MzI3NDUzMzEzMDM5Mg.GaaNkR.q_hlYtGQTaFyz_Jrp12-g8nIwtYm2TN36-40Fs")
+    token = os.getenv("DISCORD_TOKEN")
+    if not token:
+        raise SystemExit("Set the DISCORD_TOKEN environment variable (see .env.example).")
+    async with MizoBot() as bot:
+        await bot.start(token)
 
-import asyncio
-asyncio.run(main())
+
+if __name__ == "__main__":
+    asyncio.run(main())

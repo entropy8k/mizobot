@@ -34,13 +34,6 @@ class Fun(commands.Cog):
         result = random.randint(1, sides)
         await ctx.send(f"🎲 You rolled a {result} (1-{sides})")
 
-    # ---------------- COINFLIP ----------------
-    @commands.hybrid_command(name="coinflip", with_app_command=True)
-    async def coin_flip(self, ctx: commands.Context):
-        """Flip a coin."""
-        result = random.choice(["Heads", "Tails"])
-        await ctx.send(f"🪙 The coin landed on **{result}**!")
-
     # ---------------- SAY ----------------
     @commands.hybrid_command(name="say", with_app_command=True)
     async def say(self, ctx: commands.Context, *, message: str):
