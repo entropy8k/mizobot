@@ -4,7 +4,8 @@ from discord.ext import commands
 
 from utils.style import C, CURRENCY, embed, money, ts
 
-GAMES = {"coinflip": "🪙 Coinflip", "slots": "🎰 Slots"}
+GAMES = {"coinflip": "🪙 Coinflip", "slots": "🎰 Slots", "blackjack": "🃏 Blackjack", "mines": "💎 Mines",
+         "limbo": "🚀 Limbo", "dice": "🎲 Dice"}
 
 
 def signed(n: int) -> str:
@@ -72,7 +73,7 @@ class Profile(commands.Cog):
             for kind, s in stats.items():
                 tie = f" · {s['ties']} push" if s["ties"] else ""
                 e.add_field(
-                    name=GAMES[kind],
+                    name=GAMES.get(kind, kind),
                     value=f"{s['bets']:,} played · {s['wins']}W / {s['losses']}L{tie}\nNet {signed(s['net'])}",
                 )
 

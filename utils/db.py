@@ -277,7 +277,7 @@ class Database:
         rows = self.conn.execute(
             "SELECT kind, COUNT(*) bets, SUM(amount > 0) wins, SUM(amount < 0) losses, SUM(amount = 0) ties, "
             "SUM(amount) net, MAX(amount) best FROM transactions "
-            "WHERE user_id=? AND kind IN ('coinflip', 'slots') GROUP BY kind", (user_id,)
+            "WHERE user_id=? AND kind IN ('coinflip', 'slots', 'blackjack', 'mines', 'limbo', 'dice') GROUP BY kind", (user_id,)
         ).fetchall()
         return {r["kind"]: dict(r) for r in rows}
 
